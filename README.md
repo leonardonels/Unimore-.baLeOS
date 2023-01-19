@@ -8,6 +8,10 @@
  
  echo
  
+ cd.......se usato senza parametri porta alla PROPRIA home direcotry (/hoe/leo)
+ 
+ whereis .restituisce la posizione del file eseguibile e del manuale del comando passato come parametro a whereis 
+ 
  ls.......lista
  	        -l oltre al nome tutte le informazioni associate al file;
  	        -a lista anche i nomi dei file nascosi;

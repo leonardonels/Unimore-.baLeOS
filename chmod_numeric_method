@@ -1,0 +1,43 @@
+The syntax of the chmod command when using numeric method has the following format:
+
+chmod [OPTIONS] NUMBER FILE...
+
+When using the numeric mode, you can set the permissions for all three user classes (owner, group, and all others) at the same time.
+
+The NUMBER can be a 3 or 4-digits number.
+
+When 3 digits number is used, the first digit represents the permissions of the file’s owner, the second one the file’s group, and the last one all other users.
+
+Each write, read, and execute permissions have the following number value:
+
+    r (read) = 4
+    w (write) = 2
+    x (execute) = 1
+    no permissions = 0
+
+The permissions number of a specific user class is represented by the sum of the values of the permissions for that group.
+
+To find out the file’s permissions in numeric mode simply calculate the totals for all users classes. For example, to give read, write and execute
+permission to the file’s owner, read and execute permissions to the file’s group and only read permissions to all other users you would do the following:
+
+    Owner: rwx=4+2+1=7
+    Group: r-x=4+0+1=5
+    Others: r-x=4+0+0=4
+
+Using the method above we come up to the number 754, which represents the desired permissions.
+
+To set up the setuid, setgid, and sticky bit flags use four digits number.
+
+When the 4 digits number is used, the first digit has the following meaning:
+
+    setuid=4
+    setgid=2
+    sticky=1
+    no changes = 0
+
+The next three digits have the same meaning as when using 3 digits number.
+
+If the first digit is 0 it can be omitted, and the mode can be represented with 3 digits. The numeric mode 0755 is the same as 755.
+
+To calculate the numeric mode you can also use another method (binary method), but it is a little more complicated. Knowing how to calculate the
+numeric mode using 4, 2, and 1 is sufficient for most users.

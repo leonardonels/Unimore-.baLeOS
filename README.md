@@ -8,15 +8,15 @@
  
  echo
  
- ls.......list
- 	        -l oltre al nome tutte le informazioni associate al file
- 	        -a lista anche i nomi dei file nascosi
- 	       	-A uguale a -a, vengono però esclusi i collegamenti . e .. alla directory corrente e precedente
- 	     	-F evidenzia i file eseguibili con suffisso * e le directory co /
- 	     	-d list directories themselves, not their contents
- 	     	-R lista ricorsivamente i file nella gerarchia
- 	     	-i lista gli inumer dei file al loro nome
- 	     	-r lista con ordine rovesciato (reverse)
+ ls.......lista
+ 	        -l oltre al nome tutte le informazioni associate al file;
+ 	        -a lista anche i nomi dei file nascosi;
+ 	       	-A uguale a -a, vengono però esclusi i collegamenti . e .. alla directory corrente e precedente;
+ 	     	-F evidenzia i file eseguibili con suffisso * e le directory co /;
+ 	     	-d list directories themselves, not their contents;
+ 	     	-R lista ricorsivamente i file nella gerarchia;
+ 	     	-i lista gli inumer dei file al loro nome;
+ 	     	-r lista con ordine rovesciato (reverse);
  	     	-t lista i file in ordine di ultima modifica (time)
 
  pwd......printf della direcotry corrente (print su standard output)
@@ -34,7 +34,7 @@
  mv.......move
 
  rm.......remove
-          -i chiede conferma del file da eliminare
+          -i chiede conferma del file da eliminare;
           -d se si vuole eliminate la direcotry indicata
 
  cat
@@ -43,9 +43,9 @@
          per ogni file concatenato stamperà il titolo con sopra e sotto una linea di due punti ("::::::::::").
 	 
  sort......ordina le linee di standard output
-           -f ignora il case (maiuscolo o minuscoilo)
-           -r reverse
-           -n ordina le linee del file in base alla somma dei caratteri delle singole linee
+           -f ignora il case (maiuscolo o minuscoilo);
+           -r reverse;
+           -n ordina le linee del file in base alla somma dei caratteri delle singole linee;
            -R random
 
  grep......cerca la stringa indicata nel file selezionato/standard input

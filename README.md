@@ -41,12 +41,6 @@
 
  more....se cat di molteplici file li concatena in modo molto ignorante, la concatenazione tramite more aggiunge 3 line per file concatenato.
          per ogni file concatenato stamperà il titolo con sopra e sotto una linea di due punti ("::::::::::").
-	 :::::::::::::::::::
-	 titolo del file
-	 :::::::::::::::::::
-	 contenuto del file
-	 contenuto del file
-	 contenuto del file
 	 
  sort......ordina le linee di standard output
            -f ignora il case (maiuscolo o minuscoilo)

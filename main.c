@@ -137,7 +137,43 @@ int main(int argc, char** argv) {
 
 	}
 	/---------------------------------------------------------------------------*/
+	
+	/*---------------------------------------------------------------------------/
+	nel caso in cui si vogliano usare i segnali tra padre e figlio
+	
+	//al di fuori del main
+	//funzioni per trattare i segnali SIGUSR1 e SIUSR2: la prima fara' la scrittura su stdout, mentre la seconda non fara' nulla 
+	void scrivi(int sig)
+	{
+		//se il padre ha detto che devo scrivere allora si scrive la linea su standard output usando le write su 1
+		write(1, linea, cur.num);
+		stampate++;
+	}
 
+	void salta(int sig)
+	{
+		// non si deve fare nulla
+	}
+	
+	//prima dei eseguire la creazione dei figli tramite fork()
+	//padre aggancia le due funzioni (scrivi e salta) che useranno i figli alla ricezione dei segnali inviati dal padre 
+	signal(SIGUSR1, scrivi);
+	signal(SIGUSR2, salta);
+	
+	//il figlio usa la funzione pause() per attendere il segnale del padre
+	pause();
+	
+	//nel testo del padre dopo la chiusura delle pipe non necessarie, eseguiamo sleep(1) per sicurezza 
+	//il padre deve mandare il segnale che corrisponde a scrivi solo al processo di cui gli e' arrivato l'indice, mentre agli altri deve mandare il segnale che corrisponde a salta
+		for (i = 0; i < N; i++)
+		{
+			sleep(1);
+			if (i == pip.id)
+				kill(pid[i], SIGUSR1);
+			else
+				kill(pid[i], SIGUSR2);
+		}
+	/---------------------------------------------------------------------------*/
 
 	/*---------------------------------creare un file in /tmp--------------------/
 		// i figli secondi della coppia devono creare il file specificato

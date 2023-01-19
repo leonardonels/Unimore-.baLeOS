@@ -12,12 +12,12 @@
  	        -l oltre al nome tutte le informazioni associate al file
  	        -a lista anche i nomi dei file nascosi
  	       	-A uguale a -a, vengono però esclusi i collegamenti . e .. alla directory corrente e precedente
- 	     	  -F evidenzia i file eseguibili con suffisso * e le directory co /
- 	     		-d list directories themselves, not their contents
- 	     		-R lista ricorsivamente i file nella gerarchia
- 	     		-i lista gli inumer dei file al loro nome
- 	     		-r lista con ordine rovesciato (reverse)
- 	     		-t lista i file in ordine di ultima modifica (time)
+ 	     	-F evidenzia i file eseguibili con suffisso * e le directory co /
+ 	     	-d list directories themselves, not their contents
+ 	     	-R lista ricorsivamente i file nella gerarchia
+ 	     	-i lista gli inumer dei file al loro nome
+ 	     	-r lista con ordine rovesciato (reverse)
+ 	     	-t lista i file in ordine di ultima modifica (time)
 
  pwd......printf della direcotry corrente (print su standard output)
  

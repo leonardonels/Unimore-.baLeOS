@@ -3,7 +3,9 @@
  UNIX COMMANDS
  
  ps........mostra i processi attivi legati al terminale in uso
-           -e -ef -eF -ely -ax -axu bene o male si occupano tutti di mostrare la lista completa dei processi attivi
+           -e -ef -eF -ely -ax -axu bene o male si occupano tutti di mostrare la lista completa dei processi attivi;
+	   -l mostra i processi attivi (running);
+	   -f full;
            (i primmi con la 'e' con sintassi standard, i secondi con 'a' con sintassi BSD)
  
  echo

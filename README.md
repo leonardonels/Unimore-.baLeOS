@@ -65,7 +65,9 @@
 
  tail......selziona l'ultimo n numero di linee
 
- //wildcards
+ridirezione nello standard error 2>&1
+
+//wildcards
  ls [q-s]*	cereca solo i file che iniziano con i caratteri compresi tra q e s, il resto dei caratteri è valido qualsiasi ed è indicato da *
  ls *[!0-9]  cerca solo i file che NON finioscono con numero compresi tra 0 e 9
  ls [a-p,1-7]*[c,f,d]

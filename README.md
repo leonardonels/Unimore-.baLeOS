@@ -8,7 +8,7 @@
  
  echo
  
- cd.......se usato senza parametri porta alla PROPRIA home direcotry (/hoe/leo)
+ cd.......se usato senza parametri porta alla PROPRIA home direcotry (/home/leo)
  
  whereis .restituisce la posizione del file eseguibile e del manuale del comando passato come parametro a whereis 
  

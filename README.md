@@ -68,6 +68,8 @@
  diff......mostra a schermo le differenze tra piu file, l'exit status è pari a 0 se i file sono uguali, 1 se diversi, 2 in caso di errore
  
  which.....mostra dove si trova il comando nel filesystem
+ 
+ who.......mostra chi è loggato
 
  ridirezione nello standard error 2>&1
 

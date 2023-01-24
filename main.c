@@ -11,9 +11,9 @@
 typedef int pipe_t[2];
 
 /*typedef struct {
-        int Fpid;						//pid figlio (campo c1 del testo) 
-        long int occ;					//numero occorrenze (campo c2 del testo) 
-                } s_occ;
+        int Fpid;
+        long int occ;
+} s_occ;
 */
 
 int main(int argc, char** argv) {
@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
 	int N;
 	int fd;
 	pipe_t* p;		
-  char ch;
+  	char ch;
+	s_occ *cur;
 	//pipe_t piped;
 	//pipe_t *pipe_pf;
 	//pipe_t *pipe_fp;

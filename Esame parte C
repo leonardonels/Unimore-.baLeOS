@@ -1,0 +1,148 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>					
+#include <sys/stat.h>
+
+typedef int pipe_t[2];
+typedef char s[4];
+
+int main(int argc, char** argv) {
+
+	/*-----------------------------------variabili locali----------------------------------------------*/
+	int* pid, pidfiglio, status, ritorno;
+	int* nr;
+	s* ret;
+	int Q;
+	int fd;
+	pipe_t* p;
+	//char ch;
+	s chs;
+	int fdw;
+
+	/*-------------------------------------------------------------------------------------------------*/
+
+	/*----------------------------controllo del numero dei parametri passati---------------------------*/
+	if (argc < 4) {
+		printf("Errore numero di parametri: infatti argc e' %d\n", argc);
+		exit(1);
+	}
+	Q = argc - 2;
+
+	/*----------------------------controllo aventuali altri parametri passati-------------------------*/
+	if ((fdw = open(argv[argc - 1], O_WRONLY)) < 0) {
+		printf("errore nella open del file in scrittura\n");
+		exit(2);
+	}
+
+	if ((pid = (int*)malloc(Q * sizeof(int))) == NULL) {
+		printf("Errore allocazione array di pid\n");
+		exit(3);
+	}
+	if ((nr = (int*)malloc(Q * sizeof(int))) == NULL) {
+		printf("Errore allocazione array di nr\n");
+		exit(4);
+	}
+	if ((ret = (s*)malloc(Q * sizeof(s))) == NULL) {
+		printf("Errore allocazione array di ret\n");
+		exit(5);
+	}
+
+	/* allocazione pipe */
+	if ((p = (pipe_t*)malloc(Q * sizeof(pipe_t))) == NULL) {
+		printf("Errore allocazione pipe\n");
+		exit(6);
+	}
+
+	/* creazione pipe */
+	for (int q = 0; q < Q; q++) {
+		if (pipe(p[q]) < 0) {
+			printf("Errore creazione pipe\n");
+			exit(7);
+		}
+	}
+
+	/* creazione figli */
+	for (int q = 0; q < Q; q++) {
+		if ((pid[q] = fork()) < 0) {
+			printf("Errore creazione figli\n");
+			exit(8);
+		}
+		if (pid[q] == 0) {
+			/* codice figlio */
+			//printf("Sono il figlio di indice %d e pid %d\n", q, getpid());
+
+			/* chiusura pipes inutilizzate */
+			for (int j = 0; j < Q; j++) {
+				close(p[j][0]);
+				if (q != j) { close(p[j][1]); }
+			}
+
+			/* testo del figlio */
+			if ((fd = open(argv[q + 1], O_RDONLY)) < 0) {
+				printf("errore nella open del figlio\n");
+				exit(-1);
+			}
+
+			ritorno = 0;
+			do {
+				nr[q] = read(fd, &chs, 4);
+
+				write(p[q][1], &chs, nr[q]);
+				ritorno += nr[q];
+			} while (nr[q] == 4);
+
+			exit(ritorno);
+		}
+	}
+	/* fine for */
+
+	/* codice del padre */
+	/* chiusura pipe: tutte meno l'ultima in lettura */
+	for (int q = 0; q < Q; q++) {
+		close(p[q][1]);
+	}
+
+	/* testo del padre */
+
+	int finito = 0;
+	while (!finito) {
+		for (int q = 0; q < Q; q++) {
+			nr[q] = read(p[q][0], ret[q], 4);
+			if (nr[q] != 4) {
+				pid[q] = -1;
+			}
+			//printf("ho letto dalla pipe %s\n", ret[q]);
+		}
+
+		finito = 1;
+		for (int q = 0; q < Q; q++) {
+			if (pid[q] != -1) { finito = 0; }
+		}
+
+		for (int q = 0; q < Q; q++) {
+			write(fdw, ret[q], nr[q]);
+		}
+	}
+
+	/* Il padre aspetta i figli */
+	for (int q = 0; q < Q; q++) {
+		pidfiglio = wait(&status);
+		if (pidfiglio < 0) {
+			printf("Errore in wait\n");
+			exit(9);
+		}
+
+		if ((status & 0xFF) != 0) { printf("Figlio con pid %d terminato in modo anomalo\n", pidfiglio); }
+		else {
+			ritorno = (int)((status >> 8) & 0xFF);
+			printf("Il figlio con pid=%d ha ritornato %d (se 255 problemi!)\n", pidfiglio, ritorno);
+		}
+	}
+
+	exit(0);
+}

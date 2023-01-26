@@ -1,0 +1,129 @@
+::::::::::::::
+FCP.sh
+::::::::::::::
+#!/bin/sh
+#Caratteri richiesti: dir elem cont1 cont 2
+
+########################################## variabili #################################################
+TMP=/tmp/tmp$$
+E1=".$2"
+E2=".$3"
+file1=
+file2=
+dir=$1
+######################################################################################################
+
+
+#controllo in numero di parametri
+case $# in
+0|1|2) echo non abbastanza parametri; exit 1;;
+3);;
+*) echo troppi parametri; exit 2;;
+esac
+
+#controllo che il parametro sia una directory passata tramite nome assoluto
+case $1 in
+/*) if test ! -d $1 -a ! -x $1; then echo errore non direttorio o non leggibile; exit 3; fi;;
+*) echo non nome assoluto; exit 3;;
+esac
+
+case $2 in
+*/*) echo errore non stribga semplice; exit 4;;
+*);;
+esac
+
+case $3 in
+*/*) echo errore non stribga semplice; exit 4;;
+*);;
+esac
+
+######################################################################################################
+
+#creo un file temporaneo
+>$TMP
+
+#PATH
+PATH=`pwd`:$PATH
+export PATH
+
+######################################################################################################
+
+#invoco una sola fase per il file ricorsivo
+./FCR.sh $dir $2 $3 $TMP
+
+for elem in `cat $TMP`
+do
+        case $elem in
+        *$E1) file1="$file1 $elem";;
+        *$E2)   file2="$file2 $elem";;
+        *);;
+        esac
+done
+
+for elem in $file2
+do
+        ./main $file1 $elem
+done
+
+######################################################################################################
+
+#rimuovo il file temporaneo
+rm $TMP
+::::::::::::::
+FCR.sh
+::::::::::::::
+#!/bin/sh
+
+########################################## variabili #################################################
+
+cont1=0
+cont2=0
+E1=".$2"
+E2=".$3"
+file1=
+file2=
+
+######################################################################################################
+
+#entro nella direcory
+cd $1
+
+for elem in *
+do
+        if test -f $elem -a -r $elem
+        then
+                case $elem in
+                *$E1) file1="$file1 $elem"; cont1=`expr $cont1 + 1`;;
+                *$E2)   file2="$file2 $elem"; cont2=`expr $cont2 + 1`;;
+                *);;
+                esac
+        fi
+done
+
+######################################################################################################
+
+if test $cont1 -ne 0 -a $cont2 -ne 0
+then
+        echo la directory $1 rispetta le specifiche
+
+        for elem in $file1
+        do
+                echo `pwd`/$elem >> $4
+        done
+
+        for elem in $file2
+        do
+                echo `pwd`/$elem >> $4
+        done
+fi
+
+######################################################################################################
+
+#cerco la prossima cartella in cui proseguire con FCR.sh
+for dir in *
+do
+        if test -d $dir -a -x $dir
+        then
+                $0 `pwd`/$dir $2 $3 $4
+        fi
+done

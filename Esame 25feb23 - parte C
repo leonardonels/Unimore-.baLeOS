@@ -146,3 +146,32 @@ int main(int argc, char** argv) {
 
 	exit(0);
 }
+
+//parte del padre corretta, aggiunti due filtri con if che impediscono al padre di leggere pipe di figli morti e scrivere sul file stringhe di figli morti
+/*
+int finito = 0;
+	while (!finito) {
+		for (int q = 0; q < Q; q++) {
+			if (pid[q] != -1) { //<--
+				nr[q] = read(p[q][0], ret[q], 4);
+				if (nr[q] < 1) {
+					pid[q] = -1;
+				}
+			}
+			else {
+				;//altrimenti significa che il figlio é gia morto e passa al controllo del figlio seguente
+			}
+		}
+
+		finito = 1;
+		for (int q = 0; q < Q; q++) {
+			if (pid[q] != -1) { finito = 0; }
+		}
+
+		for (int q = 0; q < Q; q++) {
+			if (pid[q] != -1) { //<--
+				write(fdw, ret[q], nr[q]);
+			}
+		}
+	}
+*/

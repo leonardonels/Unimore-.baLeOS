@@ -1,0 +1,115 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<ctype.h>
+#include<sys/stat.h>
+#include<sys/wait.h>
+#include<fcntl.h>
+#include<string.h>
+#include<unistd.h>
+typedef int pipe_t[2]; //definizione del tipo pipe_t
+
+int main(int argc,char**argv)
+{
+	int M,num_lett=0,lett=0,stop=0; //variabili dedicate all'esecuzione del programma
+	int pid,status,ritorno; //interi dedicati al rilevamento dati dei processi
+	int fd,FWD; //interi dedicati ai file descriptor
+	pipe_t*pipes; //pipe
+	char Chs[3];//caratteri di controllo
+	
+	if(argc<4)//controllo numero parametri
+	{
+		printf("errore numero parametri\n");
+		exit(1);
+	}
+	M=argc-2;//numero file .S2 da analizzare
+	pipes=(pipe_t*)malloc(M*sizeof(pipe_t));
+	if(pipes==NULL)//controllo se la pipe è stata costruita a dovere
+	{
+		printf("errore generazione pipe\n");
+		exit(2);
+	}
+	for(int m=0;m<M;m++)
+	{
+		if(pipe(pipes[m])<0)
+		{
+			printf("errore impostazione pipe\n");
+			exit(3);
+		}
+	}
+	if((FWD=open(argv[argc-1],O_WRONLY))<0)//apertura file .S1 per il padre
+			{
+				printf("errore apertura file per il padre\n" );
+			}
+	for(int m=0;m<M;m++)//generazione processi figli
+	{
+		if((pid=fork())<0)
+		{
+			printf("errore creazione processo figlio %d\n",m);
+			exit(3);
+		}
+		if(pid==0)
+		{
+			for(int n=0;n<M;n++)//chiusura pipes per i figli
+			{
+				close(pipes[n][0]);
+				if(n!=m)close(pipes[n][1]);
+			}
+			if((fd=open(argv[m+1],O_RDONLY))<0)//apertura file per i figli
+			{
+				printf("errore apertura file per il figlio %d\n",m);
+			}
+			while((lett=read(fd,&Chs,3*sizeof(char)))!=0)//lettura file
+			{
+				num_lett+=lett;
+				if((write(pipes[m][1],&Chs,lett*sizeof(char)))==0)
+				{
+					printf("errore scrittura del figlio %d\n",m);
+				}
+			}
+			ritorno=num_lett;
+			exit(ritorno);
+		}
+	}
+	for(int m=0;m<M;m++)//chiusura della pipes da parte del padre
+	{
+		//close(pipes[m][0]);
+		close(pipes[m][1]);
+	}
+	//parte dedicata al programma che deve svolgere il padre con i figli
+	do 
+	{
+		stop=0;
+		for(int m=0;m<M;m++)
+		{
+			if((read(pipes[m][0],&Chs,3*sizeof(char)))!=0)
+			{
+				for(int j=0;j<3;j++)write(FWD,&(Chs[j]),sizeof(char));
+			}
+			else
+			{
+				//printf("sono finito qui\n");
+				stop++;
+			}
+		}
+    } while(stop!=M);
+
+
+	for(int m=0;m<M;m++)//controllo del valore di ritorno dei figli
+    	{
+		if((pid=wait(&status))<0)
+		{
+			printf("errore nell'attesa dei figli\n");
+			exit(5);
+		}
+		if((status & 0xFF)!=0)
+		{
+			printf("figlio %d con pid=%d è terminato in maniera anomala\n",m,pid);
+		}
+		else
+		{
+			ritorno=(int)((status>>8) & 0xFF);
+			printf("figlio %d con pid=%d ha ritornato il valore %d\n",m,pid,ritorno);
+		}
+    }
+	exit(0);
+}

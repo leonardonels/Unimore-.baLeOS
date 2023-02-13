@@ -1,0 +1,266 @@
+#FCP.sh
+#!/bin/sh
+
+case $# in
+0|1|2) echo numero parametri insufficiente; exit 1;;
+*);;
+esac
+
+for G
+do
+case $G in
+/*) if test ! -d $G -o ! -x $G; then echo non directory o non traversabile; exit 2; fi;;
+*) echo non nome assoluto di directory; exit 3;;
+esac
+done
+
+PATH=`pwd`:$PATH
+export PATH
+
+> /tmp/nomiAssoluti
+
+for G
+do
+	FCR.sh $G /tmp/nomiAssoluti
+done
+
+N=`wc -l < /tmp/nomiAssoluti`
+echo sono stati trovati $N file corrispondenti alla specifica
+
+files=
+
+for F in `cat /tmp/nomiAssoluti`
+do
+	files="$files $F"
+done
+
+main $files
+
+rm /tmp/nomiAssoluti
+
+#FCR.sh
+#!/bin/sh
+
+echo entro in $1
+cd $1
+
+
+for F in *
+do
+
+	if test -f $F -a -r $F
+		then for i in `cat $F`
+		do
+			case $i in
+			*[!a-z]*) break;;
+			*);;
+			esac
+			echo `pwd`/$F >> $2
+		done
+	fi
+
+done
+
+for D in *
+do
+	if test -d $D -a -x $D
+		then $0 `pwd`/$D $2
+	fi
+done
+
+#main.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+//#include <string.h>
+//#include <stdbool.h>
+//#include <ctype.h>					//for isalpha, isDigit
+//#include <sys/stat.h>
+
+typedef int pipe_t[2];
+
+/*typedef struct {
+        int Fpid;						//pid figlio (campo c1 del testo) 
+        long int occ;					//numero occorrenze (campo c2 del testo) 
+                } s_occ;
+*/
+
+int main(int argc, char** argv) {
+
+	/*-----------------------------------variabili locali----------------------------------------------*/
+	int *pid, pidfiglio, status, ritorno;
+	int N;
+	int fd;
+	pipe_t* pf;
+	pipe_t* fp;
+	char ch;
+	char ok;
+	//pipe_t piped;						//per la comunicazione figlio nipote
+	//pipe_t *pipe_pf;					//per la comunicazione padre figlio nel caso di comunicazione sequenziale con token
+	//pipe_t *pipe_fp;					//per la comunicazione figlio padre nel caso di comunicazione sequenziale con token
+	//int pidSpeciale;					//pid per il figlio speciale
+	//int fcreato;						//file descriptor per la creazione file da parte del padre
+
+	/*-------------------------------------------------------------------------------------------------*/
+
+	/*----------------------------controllo del numero dei parametri passati---------------------------*/
+	if (argc < 3)
+	{
+		printf("Errore numero di parametri: infatti argc e' %d\n", argc);
+		exit(1);
+	}
+	N = argc - 1;
+
+	/*----------------------------controllo aventuali altri parametri passati-------------------------*/
+	if ((pid = (int*)malloc(N * sizeof(int))) == NULL)
+	{
+		printf("Errore allocazione pipe\n");
+		exit(4);
+	}
+
+	/* allocazione pipe */
+	if ((pf = (pipe_t*)malloc(N * sizeof(pipe_t))) == NULL)
+	{
+		printf("Errore allocazione pipe\n");
+		exit(4);
+	}
+	if ((fp = (pipe_t*)malloc(N * sizeof(pipe_t))) == NULL)
+	{
+		printf("Errore allocazione pipe\n");
+		exit(4);
+	}
+
+	/* creazione pipe */
+	for (int i = 0; i < N; i++){
+		if (pipe(pf[i]) < 0)
+		{
+			printf("Errore creazione pipe\n");
+			exit(5);
+		}
+	}
+	for (int i = 0; i < N; i++) {
+		if (pipe(fp[i]) < 0)
+		{
+			printf("Errore creazione pipe\n");
+			exit(5);
+		}
+	}
+
+	/* creazione figli */
+	for (int i = 0; i < N; i++)
+	{
+		if ((pid[i] = fork()) < 0)
+		{
+			printf("Errore creazione figli\n");
+			exit(6);
+		}
+		if (pid[i] == 0) {
+			/* codice figlio */
+			printf("Sono il figlio di indice %d e pid %d\n", i, getpid());
+			
+			/* chiusura pipes inutilizzate */
+			for (int j = 0; j < N; j++)
+			{
+				close(pf[j][1]);
+				close(fp[j][0]);
+				if (j != i) { close(fp[j][1]); close(pf[j][0]); }
+			}
+			
+			/* testo del figlio */
+			if ((fd = open(argv[i + 1], O_RDONLY)) < 0) { printf("errore nella open del file\n"); exit(-1); }
+			
+			ritorno = 0;
+			while (read(fd, &ch, 1)) {
+				if (ch >= 'a' && ch <= 'z') {
+					//printf("sono il figli con indice %d e ho letto %c\n", i, ch);
+
+					int wr = write(fp[i][1], &ch, 1);
+					if (wr != 1) { printf("errore in scrittura\n"); exit(9); }
+
+					int nr = read(pf[i][0], &ok, 1);
+					if (nr != 1) { printf("errore nella read\n"); exit(-1); }
+					//printf("il padre ha risposto %c %c\n", ok, ch);
+					if (ok == 's') {
+						printf("-%c\n", ch);
+						ritorno++;
+					}
+				}
+			}
+
+			exit(ritorno);
+		}
+	} 
+	/* fine for */
+
+	/* codice del padre */
+	/* chiusura pipe: tutte meno l'ultima in lettura */
+	for (int i = 0; i < N; i++)
+	{
+		close(pf[i][0]);
+		close(fp[i][1]);
+	}
+
+	/* testo del padre */
+	int tmp=0;
+	char ct='a';
+	int finito = 0;
+	while (!finito) {
+		finito = 1;
+		for (int i = 0; i < N; i++) {
+			int nr = read(fp[i][0], &ch, 1);
+			//printf("il figlio %d ha letto %c\n", i, ch);
+			if (nr != 1) {
+				pid[i] = 0;
+			}
+			//else { finito = 0; }
+			if (ch > ct) { ct = ch; tmp = i; }
+		}
+
+		for (int i = 0; i < N; i++) {
+			if (pid[i] > 0) { finito = 0; }
+			//printf("--%d %d %c\n", i, pid[i], ch);
+		}
+
+		for (int i = 0; i < N; i++) {
+			if (pid[i] > 0) {
+				//printf("**%d %d %c\n", i, pid[i], ch);
+				if (i == tmp) {
+					ok = 's';
+					int wr = write(pf[i][1], &ok, 1);
+					if (wr != 1) { printf("errore in scrittura\n"); exit(9); }
+				}
+				else {
+					ok = 'n';
+					int wr = write(pf[i][1], &ok, 1);
+					if (wr != 1) { printf("errore in scrittura\n"); exit(9); }
+				}
+			}
+		}
+		tmp = 0;
+		ct = 'a';
+	}
+
+	/* Il padre aspetta i figli */
+	for (int i = 0; i < N; i++)
+	{
+		pidfiglio = wait(&status);
+		if (pidfiglio < 0)
+		{
+			printf("Errore in wait\n");
+			exit(9);
+		}
+
+		if ((status & 0xFF) != 0)
+			printf("Figlio con pid %d terminato in modo anomalo\n", pidfiglio);
+		else
+		{
+			ritorno = (int)((status >> 8) & 0xFF);
+			printf("Il figlio con pid=%d ha ritornato %d\n", pidfiglio, ritorno);
+		}
+	}
+
+	return 0;
+}

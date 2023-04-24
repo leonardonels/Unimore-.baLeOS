@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
 	/-----------------------------------------------------------*/
 
 	/*-----------sistema di comunicazione TOKEN RING-------------/
-  token con Q=1 pipe.
+  token con Q+1 pipe.
 	/-----------------------------------------------------------*/
 
 	/*-------sistema di comunicazione lineare concorrente--------/
